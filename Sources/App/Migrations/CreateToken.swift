@@ -6,6 +6,7 @@ struct CreateToken: Migration {
             .id()
             .field("token_value", .string, .required)
             .field("user_id", .uuid, .required, .references("users", "id"))
+            .unique(on: "token_value")
             .create()
     }
 
