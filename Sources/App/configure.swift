@@ -15,6 +15,7 @@ public func configure(_ app: Application) throws {
     ), as: .psql)
 
     app.migrations.add(CreateUser())
+    app.migrations.add(CreateTodo())
     app.migrations.add(CreateToken())
 
     // register routes

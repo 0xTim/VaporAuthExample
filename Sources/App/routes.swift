@@ -10,6 +10,6 @@ func routes(_ app: Application) throws {
         return "Hello, world!"
     }
 
-    let userController = UserController()
-    try app.register(collection: userController)
+    try app.register(collection: UserController())
+    try app.register(collection: TodoController())
 }
