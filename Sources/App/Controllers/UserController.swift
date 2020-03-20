@@ -12,7 +12,9 @@ struct UserController: RouteCollection {
         
         let tokenAuthRoutes = userRoutes.grouped(Token.authenticator().middleware())
         tokenAuthRoutes.get("me", use: getMyDetailsHandler)
-        tokenAuthRoutes.delete(":userID", use: deleteHandler)
+        
+        let adminMiddleware = tokenAuthRoutes.grouped(AdminMiddleware())
+        adminMiddleware.delete(":userID", use: deleteHandler)
     }
     
     func indexHandler(_ req: Request) throws -> EventLoopFuture<[User]> {
@@ -20,8 +22,9 @@ struct UserController: RouteCollection {
     }
 
     func createHandler(_ req: Request) throws -> EventLoopFuture<User> {
-        let user = try req.content.decode(User.self)
-        user.passwordHash = try Bcrypt.hash(user.passwordHash)
+        let userData = try req.content.decode(CreateUserData.self)
+        let passwordHash = try Bcrypt.hash(userData.password)
+        let user = User(name: userData.name, email: userData.email, passwordHash: passwordHash, userType: userData.userType)
         return user.save(on: req.db).map { user }
     }
 
@@ -41,4 +44,11 @@ struct UserController: RouteCollection {
     func getMyDetailsHandler(_ req: Request) throws -> User {
         try req.auth.require(User.self)
     }
+}
+
+struct CreateUserData: Content {
+    let name: String
+    let email: String
+    let password: String
+    let userType: UserType
 }
