@@ -7,7 +7,7 @@ struct TodoController: RouteCollection {
         let tokenAuthRoutes = routes.grouped("todos").grouped(Token.authenticator().middleware(), User.guardMiddleware())
         tokenAuthRoutes.get(use: indexHandler)
         tokenAuthRoutes.post(use: createHandler)
-        tokenAuthRoutes.delete(use: deleteHandler)
+        tokenAuthRoutes.delete(":todoID", use: deleteHandler)
     }
     
     func indexHandler(_ req: Request) throws -> EventLoopFuture<[Todo]> {
