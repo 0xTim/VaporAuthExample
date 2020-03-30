@@ -7,6 +7,7 @@ struct CreateToken: Migration {
             .field("token_value", .string, .required)
             .field("user_id", .uuid, .required, .references("users", "id"))
             .field("expires_at", .date, .required)
+            .field("is_revoked", .bool, .required)
             .unique(on: "token_value")
             .create()
     }
