@@ -7,7 +7,7 @@ final class Token: Model, Content, ModelUserToken {
     static let userKey = \Token.$user
     
     var isValid: Bool {
-        true
+        return self.expiresAt < Date()
     }
     
     @ID(key: .id)
@@ -18,6 +18,9 @@ final class Token: Model, Content, ModelUserToken {
     
     @Parent(key: "user_id")
     var user: User
+    
+    @Field(key: "expires_at")
+    var expiresAt: Date
 
     init() { }
 
@@ -25,6 +28,8 @@ final class Token: Model, Content, ModelUserToken {
         self.id = id
         self.value = value
         self.$user.id = userID
+        // Set expirty to 30 days
+        self.expiresAt = Date().advanced(by: 60 * 60 * 24 * 30)
     }
 }
 
