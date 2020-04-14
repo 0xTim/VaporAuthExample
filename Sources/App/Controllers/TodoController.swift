@@ -4,7 +4,7 @@ import Vapor
 struct TodoController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
-        let tokenAuthRoutes = routes.grouped("todos").grouped(Token.authenticator().middleware(), User.guardMiddleware())
+        let tokenAuthRoutes = routes.grouped("todos").grouped(Token.authenticator(), User.guardMiddleware())
         tokenAuthRoutes.get(use: indexHandler)
         tokenAuthRoutes.post(use: createHandler)
         tokenAuthRoutes.delete(":todoID", use: deleteHandler)

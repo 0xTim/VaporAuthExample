@@ -1,7 +1,8 @@
 import Fluent
 import Vapor
 
-final class Token: Model, Content, ModelUserToken {
+final class Token: Model, Content, ModelTokenAuthenticatable {    
+    typealias User = App.User
     static let schema = "tokens"
     static let valueKey = \Token.$value
     static let userKey = \Token.$user

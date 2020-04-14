@@ -7,12 +7,12 @@ struct UserController: RouteCollection {
         let userRoutes = routes.grouped("users")
         userRoutes.get(use: indexHandler)
         userRoutes.post(use: createHandler)
-        let httpBasicAuthRoutes = userRoutes.grouped(User.authenticator().middleware())
+        let httpBasicAuthRoutes = userRoutes.grouped(User.authenticator())
         httpBasicAuthRoutes.post("login", use: loginHandler)
         
         // Token.authenticator.middleware() adds Bearer authentication with middleware,
         // Guard middlware ensures a user is logged in
-        let tokenAuthRoutes = userRoutes.grouped(Token.authenticator().middleware(), User.guardMiddleware())
+        let tokenAuthRoutes = userRoutes.grouped(Token.authenticator(), User.guardMiddleware())
         tokenAuthRoutes.get("me", use: getMyDetailsHandler)
         
         let adminMiddleware = tokenAuthRoutes.grouped(AdminMiddleware())
