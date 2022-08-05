@@ -1,10 +1,11 @@
 import Vapor
 
-struct AdminMiddleware: Middleware {
-    func respond(to request: Request, chainingTo next: Responder) -> EventLoopFuture<Response> {
-        guard let user = try? request.auth.require(User.self), user.userType == .admin else {
-            return request.eventLoop.makeFailedFuture(Abort(.forbidden))
+struct AdminMiddleware: AsyncMiddleware {
+    func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
+        guard let user = request.auth.get(User.self), user.userType == .admin else {
+          throw Abort(.unauthorized)
         }
-        return next.respond(to: request)
+      
+        return try await next.respond(to: request)
     }
 }

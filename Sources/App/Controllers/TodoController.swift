@@ -10,31 +10,31 @@ struct TodoController: RouteCollection {
         tokenAuthRoutes.delete(":todoID", use: deleteHandler)
     }
     
-    func indexHandler(_ req: Request) throws -> EventLoopFuture<[Todo]> {
-        return Todo.query(on: req.db).all()
+    func indexHandler(_ req: Request) async throws -> [Todo] {
+        return try await Todo.query(on: req.db).all()
     }
 
-    func createHandler(_ req: Request) throws -> EventLoopFuture<Todo> {
+    func createHandler(_ req: Request) async throws -> Todo {
         let data = try req.content.decode(TodoCreateData.self)
         let user = try req.auth.require(User.self)
         let todo = try Todo(title: data.title, userID: user.requireID())
-        return todo.save(on: req.db).map { todo }
+        try await todo.save(on: req.db)
+        return todo
     }
 
-    func deleteHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        return Todo.find(req.parameters.get("todoID"), on: req.db)
-            .unwrap(or: Abort(.notFound))
-            .flatMap { todo in
-                do {
-                    let user = try req.auth.require(User.self)
-                    guard try user.userType == .admin || user.requireID() == todo.$user.id else {
-                        throw Abort(.forbidden)
-                    }
-                    return todo.delete(on: req.db).transform(to: .ok)
-                } catch {
-                    return req.eventLoop.makeFailedFuture(error)
-                }
+    func deleteHandler(_ req: Request) async throws -> HTTPStatus {
+        guard let todo: Todo = try await Todo.find(req.parameters.get("todoID"), on: req.db) else {
+          throw Abort(.notFound)
         }
+
+        let user = try req.auth.require(User.self)
+        guard try user.userType == .admin || user.requireID() == todo.$user.id else {
+            throw Abort(.forbidden)
+        }
+
+        try await todo.delete(on: req.db)
+        return .ok
+
     }
 }
 

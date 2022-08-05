@@ -19,28 +19,31 @@ struct UserController: RouteCollection {
         adminMiddleware.delete(":userID", use: deleteHandler)
     }
     
-    func indexHandler(_ req: Request) throws -> EventLoopFuture<[User]> {
-        return User.query(on: req.db).all()
+    func indexHandler(_ req: Request) async throws -> [User] {
+        return try await User.query(on: req.db).all()
     }
 
-    func createHandler(_ req: Request) throws -> EventLoopFuture<User> {
+    func createHandler(_ req: Request) async throws -> User {
         let userData = try req.content.decode(CreateUserData.self)
         let passwordHash = try Bcrypt.hash(userData.password)
         let user = User(name: userData.name, email: userData.email, passwordHash: passwordHash, userType: userData.userType)
-        return user.save(on: req.db).map { user }
+        try await user.save(on: req.db)
+        return user
     }
 
-    func deleteHandler(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        return User.find(req.parameters.get("userID"), on: req.db)
-            .unwrap(or: Abort(.notFound))
-            .flatMap { $0.delete(on: req.db) }
-            .transform(to: .ok)
+    func deleteHandler(_ req: Request) async throws -> HTTPStatus {
+      guard let user: User = try await User.find(req.parameters.get("userID"), on: req.db) else {
+        throw Abort(.notFound)
+      }
+      try await user.delete(on: req.db)
+      return .ok
     }
     
-    func loginHandler(_ req: Request) throws -> EventLoopFuture<Token> {
+    func loginHandler(_ req: Request) async throws -> Token {
         let user = try req.auth.require(User.self)
         let token = try user.generateToken()
-        return token.save(on: req.db).map { token }
+        try await token.save(on: req.db)
+        return token
     }
     
     func getMyDetailsHandler(_ req: Request) throws -> User {
