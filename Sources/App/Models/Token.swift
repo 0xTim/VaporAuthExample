@@ -1,11 +1,11 @@
 import Fluent
 import Vapor
 
-final class Token: Model, Content, ModelTokenAuthenticatable {    
+final class Token: Model, Content, ModelTokenAuthenticatable, @unchecked Sendable {    
     typealias User = App.User
     static let schema = "tokens"
-    static let valueKey = \Token.$value
-    static let userKey = \Token.$user
+    static var valueKey: KeyPath<Token, Field<String>> { \.$value }
+    static var userKey: KeyPath<Token, Parent<User>> { \.$user }
     
     var isValid: Bool {
         return self.expiresAt > Date() && !self.isRevoked
@@ -37,5 +37,3 @@ final class Token: Model, Content, ModelTokenAuthenticatable {
         self.isRevoked = false
     }
 }
-
-

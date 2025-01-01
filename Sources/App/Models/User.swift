@@ -1,11 +1,11 @@
 import Fluent
 import Vapor
 
-final class User: Model, Content, ModelAuthenticatable {
+final class User: Model, Content, ModelAuthenticatable, @unchecked Sendable {
     static let schema = "users"
-    static let usernameKey = \User.$email
-    static let passwordHashKey = \User.$passwordHash
-    
+    static var usernameKey: KeyPath<User, Field<String>> { \.$email }
+    static var passwordHashKey: KeyPath<User, Field<String>> { \.$passwordHash }
+
     @ID(key: .id)
     var id: UUID?
 
